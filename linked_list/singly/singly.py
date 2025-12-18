@@ -1,5 +1,5 @@
-from node import Node
-from exception import Empty
+from .node import Node
+from .exception import Empty
 from typing import Any
 
 
