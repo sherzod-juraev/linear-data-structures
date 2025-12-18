@@ -1,5 +1,5 @@
-from .node import Node
-from .exception import Empty
+from node import Node
+from exception import Empty
 from typing import Any
 
 
@@ -63,17 +63,10 @@ class SinglyLinkedList:
     def __iter__(self):
         """Return an iterator for the list"""
 
-        self.__current = self.__head
-        return self
-
-    def __next__(self):
-        """Return the next element during iteration"""
-
-        if self.__current is not None:
-            val, self.__current = self.__current.value, self.__current.next
-            return val
-        else:
-            raise StopIteration
+        current = self.__head
+        while current:
+            yield current.value
+            current = current.next
 
     def __getitem__(self, item):
         """Return the element at the specified index"""
@@ -103,33 +96,38 @@ class SinglyLinkedList:
     def prepend(self, value, /):
         """Insert a new element at the beginning of the list"""
 
+        if self.__length == 0:
+            self.__head = Node(value)
+            self.__autoincrement_length()
+            return
         new_node = Node(value)
-        self.__autoincrement_length()
-        if self.__head is not None:
-            new_node.next = self.__head
+        new_node.next = self.__head
         self.__head = new_node
+        self.__autoincrement_length()
 
     def append(self, value: Any, /):
         """Insert a new element at the end of the list"""
 
+        if self.__length == 0:
+            self.prepend(value)
+            return
         current = self.__head
-        self.__autoincrement_length()
-        if current is None:
-            self.__head = Node(value)
-            return None
         while current.next is not None:
             current = current.next
         current.next = Node(value)
+        self.__autoincrement_length()
 
     def insert_at(self, index: int, value: Any, /):
         """Insert a new element at the specified index"""
 
+        if index == 0:
+            self.prepend(value)
+            return
+        elif index == self.__length:
+            self.append(value)
+            return
         self.__verify_index(index)
         new_node = Node(value)
-        if index == 0:
-            new_node.next = self.__head
-            self.__head = new_node
-            return None
         current = self.__head
         for _ in range(index - 1):
             current = current.next
@@ -150,7 +148,7 @@ class SinglyLinkedList:
         self.__verify_empty()
         if self.__length == 1:
             self.remove_first()
-            return None
+            return
         current = self.__head
         for _ in range(self.__length - 2):
             current = current.next
@@ -162,14 +160,14 @@ class SinglyLinkedList:
 
         self.__verify_empty()
         self.__verify_index(index, remove=True)
-        self.__autodecrement_length()
         if index == 0:
-            self.__head = self.__head.next
+            self.remove_first()
             return None
         current = self.__head
         for _ in range(index - 1):
             current = current.next
         current.next = current.next.next
+        self.__autodecrement_length()
 
     def remove(self, value, /):
         """
@@ -181,15 +179,14 @@ class SinglyLinkedList:
         """
 
         self.__verify_empty()
+        if self.__head.value == value:
+            self.remove_first()
+            return
         current = self.__head
         for i in range(self.__length - 1):
             if current.next.value == value:
                 current.next = current.next.next
                 self.__autodecrement_length()
-                return None
-            elif self.__head.value == value:
-                self.__head = self.__head.next
-                self.__autodecrement_length()
-                return None
+                return
             current = current.next
-        raise ValueError('qiymat topilmadi')
+        raise ValueError('Value not found')
